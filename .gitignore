@@ -1,8 +1,4 @@
 wandb
 dataset
 models
-1_ImageEncoder.ipynb
-2_TextEncoder.ipynb
-3_PreparingFunctions.ipynb
-4_FlowMatching.ipynb
-5_TrainingPipeline.ipynb
+codeBlock
