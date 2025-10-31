@@ -43,3 +43,39 @@ class TimeEmbedding(nn.Module):
 # time = torch.tensor([5]).to(device)
 # out = tEmbed(time)
 # print(out.shape)
+
+class AdaptiveLayerNorm(nn.Module):
+    def __init__(self, embedDimension):
+        super().__init__()
+        self.embedDimension = embedDimension
+        self.adaLN = nn.Sequential(
+            nn.SiLU(),
+            nn.Linear(embedDimension, 6 * embedDimension)
+        )
+        self.scaleShiftParameters = nn.Parameter(torch.zeros(6, embedDimension))
+        nn.init.zeros_(self.adaLN[1].weight)
+        nn.init.zeros_(self.adaLN[1].bias)      
+    
+    def forward(self, t):
+        batchSize, _ = t.shape
+        t = self.adaLN(t)
+        t = t.reshape(batchSize, 6, -1)
+        gamma_msa, beta_msa, alpha_msa, gamma_mlp, beta_mlp, alpha_mlp = (
+            (self.scaleShiftParameters[None] + t).chunk(6, dim = 1)
+        )
+        gamma_msa = gamma_msa.squeeze(1)
+        beta_msa = beta_msa.squeeze(1)
+        alpha_msa = alpha_msa.squeeze(1)
+        gamma_mlp = gamma_mlp.squeeze(1)
+        beta_mlp = beta_mlp.squeeze(1)
+        alpha_mlp = alpha_mlp.squeeze(1)
+        return gamma_msa, beta_msa, alpha_msa, gamma_mlp, beta_mlp, alpha_mlp
+    
+# embedDimension = 768
+# tEmbed = TimeEmbedding(embedDimension=embedDimension)
+# tEmbed.to(device)
+# time = torch.tensor([1000]).to(device)
+# tout = tEmbed(time)
+# adaNorm = AdaptiveLayerNorm(768)
+# g1, b1, a1, g2, b2, a2 = adaNorm(tout)
+# g1.shape, b1.shape, a1.shape, g2.shape, b2.shape, a2.shape
