@@ -79,3 +79,65 @@ class AdaptiveLayerNorm(nn.Module):
 # adaNorm = AdaptiveLayerNorm(768)
 # g1, b1, a1, g2, b2, a2 = adaNorm(tout)
 # g1.shape, b1.shape, a1.shape, g2.shape, b2.shape, a2.shape
+
+
+class Rotary2DPositionalEncoding(nn.Module):
+    def __init__(self, height, width, embedDimension):
+        super().__init__()
+        self.height = height
+        self.width = width
+        self.embedDimension = embedDimension
+
+        self.dimHalf = embedDimension // 2
+        self.dimQuarter = embedDimension // 4
+        inverseFrequency = 1.0 / (10000 ** (torch.arange(0, self.dimQuarter, dtype=torch.float32) / self.dimQuarter))
+
+        heightPositions = torch.arange(height, dtype=torch.float32)
+        widthPositions = torch.arange(width, dtype=torch.float32)
+
+        sinusoidHeight = torch.einsum("i,j->ij", heightPositions, inverseFrequency)
+        sinusoidWidth = torch.einsum("i,j->ij", widthPositions, inverseFrequency)
+
+        self.register_buffer("sinHeight", sinusoidHeight.sin(), persistent=False)
+        self.register_buffer("cosHeight", sinusoidHeight.cos(), persistent=False)
+        self.register_buffer("sinWidth", sinusoidWidth.sin(), persistent=False)
+        self.register_buffer("cosWidth", sinusoidWidth.cos(), persistent=False)
+
+    def rotateEveryTwo(self, x):
+        x1 = x[..., ::2]
+        x2 = x[..., 1::2]
+        return torch.stack((-x2, x1), dim=-1).flatten(-2)
+    
+    def applyRope(self, x, sinHeight, cosHeight, sinWidth, cosWidth):
+
+        xHeight = x[..., :self.dimHalf]
+        xWidth = x[..., self.dimHalf:]
+
+        sinHeight = sinHeight[None, :, None, :].to(x.device)
+        cosHeight = cosHeight[None, :, None, :].to(x.device)
+        sinWidth = sinWidth[None, None, :, :].to(x.device)
+        cosWidth = cosWidth[None, None, :, :].to(x.device)
+
+        xHeightRotional = (xHeight[..., :self.dimQuarter] * cosHeight) + (self.rotateEveryTwo(xHeight[..., :self.dimQuarter]) * sinHeight)
+        xWidthRotional = (xWidth[..., :self.dimQuarter] * cosWidth) + (self.rotateEveryTwo(xWidth[..., :self.dimQuarter]) * sinWidth)
+
+        xHeightRotional = torch.cat([xHeightRotional, xHeight[..., self.dimQuarter:]], dim=-1)
+        xWidthRotional = torch.cat([xWidthRotional, xWidth[..., self.dimQuarter:]], dim=-1)
+        rotated = torch.cat([xHeightRotional, xWidthRotional], dim=-1)
+        return rotated
+
+
+    def forward(self, x):
+        B, L, D = x.shape
+        assert D == self.embedDimension
+        assert L == self.height * self.width, f"Expected seq_len {self.height*self.width}, got {L}"
+
+        x = x.view(B, self.height, self.width, D)
+        x = self.applyRope(x, self.sinHeight, self.cosHeight, self.sinWidth, self.cosWidth)
+        return x.view(B, L, D)
+
+# rope2D = Rotary2DPositionalEncoding(8, 8, 128)
+# imagePatches = torch.randn(2, 64, 128)
+
+# out = rope2D(imagePatches)
+# out.shape
