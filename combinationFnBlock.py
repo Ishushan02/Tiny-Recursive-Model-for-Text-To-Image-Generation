@@ -194,3 +194,42 @@ class PatchEmbedding(nn.Module):
 # unpatched = pEmbed.unPatchify(out)
 # print(out.shape, unpatched.shape)
 
+def shiftModulate(x, scale, shift):
+    return x * (1 + scale.unsqueeze(1)) + shift.unsqueeze(1)
+
+class ScaleShiftBlock(nn.Module):
+    def __init__(self, embedDimension):
+        super().__init__()
+        self.embedDimension = embedDimension
+        self.norm = nn.LayerNorm(embedDimension, elementwise_affine=False, eps=1e-6)
+        # nn.init.ones_(self.norm.weight)
+        # nn.init.zeros_(self.norm.bias)
+
+    def forward(self, x, beta, gamma):
+        B, N, W = x.shape
+        x_norm = self.norm(x)
+        out = shiftModulate(x_norm, gamma, beta)
+        return out
+
+
+def scaleModulate(x, scale):
+    return x * (1 + scale.unsqueeze(1))
+
+class ScaleBlock(nn.Module):
+    def __init__(self, embedDimension):
+        super().__init__()
+        self.embedDimension = embedDimension
+        self.norm = nn.LayerNorm(embedDimension, elementwise_affine=False, eps=1e-6)
+        # nn.init.ones_(self.norm.weight)
+        # nn.init.zeros_(self.norm.bias)
+
+    def forward(self, x, alpha):
+        B, N, W = x.shape
+        x_norm = self.norm(x)
+        out = scaleModulate(x_norm, alpha)
+        return out
+    
+# patchify_latents = torch.randn(1, 16, 768)
+# scShft = ScaleBlock(embedDimension)
+# out = scShft(patchify_latents, a1)
+# out.shape
