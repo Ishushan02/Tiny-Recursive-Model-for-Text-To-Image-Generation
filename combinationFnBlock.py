@@ -4,6 +4,19 @@ from torch.utils.data import DataLoader, Dataset
 from diffusers import AutoencoderDC
 import numpy as np
 import math
+import torch.nn.functional as Fn
+from transformers import AutoTokenizer, AutoModel, T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPModel, CLIPProcessor
+from torchvision import transforms
+from diffusers import AutoencoderDC
+from diffusers import DDPMScheduler, DDIMScheduler
+from torch.utils.data import DataLoader, Dataset
+import pandas as pd
+from PIL import Image
+import os
+from torch.optim.lr_scheduler import StepLR
+import random
+# from CombinationFunctions import ImageInputToDiT, NDiTModule, Decoder, TimeEmbedding, TextEmbedding
+from tqdm import tqdm
 
 
 
@@ -136,8 +149,48 @@ class Rotary2DPositionalEncoding(nn.Module):
         x = self.applyRope(x, self.sinHeight, self.cosHeight, self.sinWidth, self.cosWidth)
         return x.view(B, L, D)
 
-# rope2D = Rotary2DPositionalEncoding(8, 8, 128)
-# imagePatches = torch.randn(2, 64, 128)
+# rope2D = Rotary2DPositionalEncoding(4, 4, 768)
+# imagePatches = torch.randn(2, 16, 768)
 
 # out = rope2D(imagePatches)
-# out.shape
+# print(out.shape)
+
+
+
+class PatchEmbedding(nn.Module):
+    def __init__(self, imageSize, patchSize, inChannels, embedDimension):
+        super().__init__()
+        self.patchSize = patchSize
+        self.inChannels = inChannels
+        self.embedDimension = embedDimension
+        self.imageSize = imageSize
+
+        self.patches = imageSize//patchSize * imageSize//patchSize
+
+        self.encode = nn.Conv2d(in_channels = inChannels, out_channels = inChannels, kernel_size = patchSize, stride = patchSize, bias = True)
+        self.decode = nn.ConvTranspose2d(in_channels=inChannels, out_channels=inChannels, kernel_size=patchSize, stride=patchSize, bias=True)
+    
+
+    def unPatchify(self, x):
+        batchSize, NPatches, EmbedDim = x.shape
+        patchPerDim = self.imageSize // self.patchSize
+        x = x.transpose(1, 2).reshape(batchSize, EmbedDim, patchPerDim, patchPerDim)
+        out = self.decode(x)
+        return out
+
+
+    def forward(self, latentImage):
+
+        allPatch = self.encode(latentImage)
+        # print(allPatch.shape)
+        flattened = allPatch.flatten(2).transpose(1, 2)
+        # print(flattened.shape, self.positionalEmbedding.shape)
+        out = flattened
+        return out
+
+# latent = torch.randn(128, 8, 8).unsqueeze(0)
+# pEmbed = PatchEmbedding(imageSize = 8, patchSize = 2, inChannels = 128, embedDimension = 768)
+# out = pEmbed(latent)
+# unpatched = pEmbed.unPatchify(out)
+# print(out.shape, unpatched.shape)
+
