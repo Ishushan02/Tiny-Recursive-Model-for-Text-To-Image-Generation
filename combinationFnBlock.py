@@ -233,3 +233,26 @@ class ScaleBlock(nn.Module):
 # scShft = ScaleBlock(embedDimension)
 # out = scShft(patchify_latents, a1)
 # out.shape
+
+
+class FeedForwardBlock(nn.Module):
+    def __init__(self, embedDimension):
+        super().__init__()
+
+        self.linear1 = nn.Linear(embedDimension, embedDimension * 4)
+        self.linear2 = nn.Linear(embedDimension * 4, embedDimension)
+        self.gelu = nn.GELU()
+
+        nn.init.zeros_(self.linear1.weight)
+        nn.init.zeros_(self.linear2.weight)
+
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.gelu(x)
+        x = self.linear2(x)
+        return x
+    
+# latents = torch.randn(1, 16, 768)
+# ff = FeedForwardBlock(768)
+# out = ff(latents)
+# out.shape
