@@ -1,3 +1,5 @@
 wandb
 dataset
 models
+forwardLearning
+.gitignore
