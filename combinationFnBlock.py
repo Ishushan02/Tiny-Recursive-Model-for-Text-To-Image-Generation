@@ -73,9 +73,16 @@ class AdaptiveLayerNorm(nn.Module):
         batchSize, _ = t.shape
         t = self.adaLN(t)
         t = t.reshape(batchSize, 6, -1)
-        gamma_msa, beta_msa, alpha_msa, gamma_mlp, beta_mlp, alpha_mlp = (
-            (self.scaleShiftParameters[None] + t).chunk(6, dim = 1)
-        )
+
+        # gamma_msa, beta_msa, alpha_msa, gamma_mlp, beta_mlp, alpha_mlp = (
+        #     (self.scaleShiftParameters[None] + t).chunk(6, dim = 1)
+        # )
+
+        scale_shift = self.scaleShiftParameters.unsqueeze(0)  
+        t = t + scale_shift                               
+
+        gamma_msa, beta_msa, alpha_msa, gamma_mlp, beta_mlp, alpha_mlp = t.chunk(6, dim=1)
+
         gamma_msa = gamma_msa.squeeze(1)
         beta_msa = beta_msa.squeeze(1)
         alpha_msa = alpha_msa.squeeze(1)
@@ -91,7 +98,7 @@ class AdaptiveLayerNorm(nn.Module):
 # tout = tEmbed(time)
 # adaNorm = AdaptiveLayerNorm(768)
 # g1, b1, a1, g2, b2, a2 = adaNorm(tout)
-# g1.shape, b1.shape, a1.shape, g2.shape, b2.shape, a2.shape
+# print(g1.shape, b1.shape, a1.shape, g2.shape, b2.shape, a2.shape)
 
 
 class Rotary2DPositionalEncoding(nn.Module):
