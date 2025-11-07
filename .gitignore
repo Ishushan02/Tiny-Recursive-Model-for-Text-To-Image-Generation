@@ -2,4 +2,4 @@ wandb
 dataset
 models
 forwardLearning
-.gitignore
+forwardReasoning
