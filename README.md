@@ -8,7 +8,7 @@ The model is trained on **COCO-style image–caption datasets** and learns to de
 
 ## Architecture Overview
 
-![Architecture](architecture.jpg)
+![Architecture](Images/architecture.jpg)
 
 The system consists of:
 - Multi-model text embedding fusion
