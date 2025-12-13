@@ -123,6 +123,7 @@ Total Loss = MSE Loss + 0.25 × Perceptual Loss
 | Supervision Steps | 16 |
 | Attention Heads | 16 |
 | Embedding Dim | 768 |
+| Model Size | 27 M |
 
 ---
 
