@@ -161,25 +161,5 @@ Training resumes automatically if a checkpoint exists.
 
 ---
 
-## Running Training
-
-```bash
-python train.py
-```
-
-Ensure CUDA is available and dataset paths are correctly configured.
-
----
-
 ## Notes
-
-- Designed for research experimentation
-- Memory intensive due to large text embeddings
-- Recursive reasoning improves stability over deep single-pass transformers
-- Easily extendable to diffusion-style conditioning
-
----
-
-## License
-
-For research and educational use only.
+I couldn't train it, as I did not have access to H100 GPU's, you can try training it, and hope for best results.
