@@ -28,6 +28,27 @@ else:
 torch.autograd.set_detect_anomaly(True)
 print("Device: ", device)
 
+DCAEENCODER = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
+VGG_MODEL = vgg16(pretrained=True).features[:17].eval().to(device)
+
+modelPath = "./models/"
+os.makedirs(modelPath, exist_ok=True)
+# BGEDIR = os.path.join(modelPath, "bge-base-en-v1.5")
+# NMCDIR = os.path.join(modelPath, "nomic-embed-text-v1")
+QWENDIR = os.path.join(modelPath, "qwen3-embedding-8b")
+# AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
+# AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
+# AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(NMCDIR)
+# AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(NMCDIR)
+AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(QWENDIR)
+AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(QWENDIR)
+
+# BGETOKENIZER = AutoTokenizer.from_pretrained(BGEDIR, local_files_only=True)
+# BGEMODEL = AutoModel.from_pretrained(BGEDIR, local_files_only=True)
+# NMCTOKENIZER = AutoTokenizer.from_pretrained(NMCDIR, local_files_only=True)
+# NMCMODEL = AutoModel.from_pretrained(NMCDIR, trust_remote_code=True, local_files_only=True)
+QWEN3TOKENIZER = AutoTokenizer.from_pretrained(QWENDIR, local_files_only=True)
+QWEN3MODEL = AutoModel.from_pretrained(QWENDIR, local_files_only=True)
 
 
 # wandb.login()
@@ -39,56 +60,58 @@ print("Device: ", device)
 #     id="tmoz8jmm"
 # )
 
+baseDir = os.path.dirname(__file__)
+# modelPath = os.path.join(baseDir, "models")
 
-
-def concatenateTextEmbeddings(text, maxLength = 512, modelPath = "./models/"):
+def concatenateTextEmbeddings(text, maxLength = 512, modelPath = "./models"):
     if isinstance(text, str):
         text = [text]
     elif isinstance(text, (list, tuple)):
         pass
     else:
         raise ValueError(f"Give string or list of strings, recieved this {type(text)}")
+    
+    # os.makedirs(modelPath, exist_ok=True)
+    # bgedir = os.path.join(modelPath, "bge-base-en-v1.5")
+    # nmcdir = os.path.join(modelPath, "nomic-embed-text-v1")
+    # qwendir = os.path.join(modelPath, "qwen3-embedding-8b")
+    
 
-    bgedir = os.path.join(modelPath, "bge-base-en-v1.5")
-    nmcdir = os.path.join(modelPath, "nomic-embed-text-v1")
-    qwendir = os.path.join(modelPath, "qwen3-embedding-8b")
-    os.makedirs(modelPath, exist_ok=True)
+    # if not (os.path.exists(bgedir) and os.listdir(bgedir)):
+    #     print("Downloading BGE-base-en-v1.5...")
+    #     AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
+    #     AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
 
-    if not (os.path.exists(bgedir) and os.listdir(bgedir)):
-        print("Downloading BGE-base-en-v1.5...")
-        AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
-        AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
+    # if not (os.path.exists(nmcdir) and os.listdir(nmcdir)):
+    #     print("Downloading Nomic-embed-text-v1...")
+    #     AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(nmcdir)
+    #     AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(nmcdir)
 
-    if not (os.path.exists(nmcdir) and os.listdir(nmcdir)):
-        print("Downloading Nomic-embed-text-v1...")
-        AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(nmcdir)
-        AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(nmcdir)
+    # if not (os.path.exists(qwendir) and os.listdir(qwendir)):
+    #     print("Downloading Qwen3-Embedding-8B...")
+    #     AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
+    #     AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
 
-    if not (os.path.exists(qwendir) and os.listdir(qwendir)):
-        print("Downloading Qwen3-Embedding-8B...")
-        AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
-        AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
+    # bgeTokenizer = AutoTokenizer.from_pretrained(bgedir)#, local_files_only=True)
+    # bgeModel = AutoModel.from_pretrained(bgedir)#, local_files_only=True)
+    # nmcTokenizer = AutoTokenizer.from_pretrained(nmcdir)#, local_files_only=True)
+    # nmcModel = AutoModel.from_pretrained(nmcdir, trust_remote_code=True)#, local_files_only=True)
+    # qwen3Tokenizer = AutoTokenizer.from_pretrained(qwendir)#, local_files_only=True)
+    # qwen3Model = AutoModel.from_pretrained(qwendir)#, local_files_only=True)
 
-    bgeTokenizer = AutoTokenizer.from_pretrained(bgedir, local_files_only=True)
-    bgeModel = AutoModel.from_pretrained(bgedir, local_files_only=True)
-    nmcTokenizer = AutoTokenizer.from_pretrained(nmcdir, local_files_only=True)
-    nmcModel = AutoModel.from_pretrained(nmcdir, trust_remote_code=True, local_files_only=True)
-    qwen3Tokenizer = AutoTokenizer.from_pretrained(qwendir, local_files_only=True)
-    qwen3Model = AutoModel.from_pretrained(qwendir, local_files_only=True)
-
-    input1 = bgeTokenizer(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
-    input2 = nmcTokenizer(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
-    input3 = qwen3Tokenizer(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
+    # input1 = BGETOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
+    # input2 = NMCTOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
+    input3 = QWEN3TOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
 
     with torch.no_grad():
-        output1 = bgeModel(**input1)
-        embeddings1 = output1.last_hidden_state
-        output2 = nmcModel(**input2)
-        embeddings2 = output2.last_hidden_state
-        output3 = qwen3Model(**input3)
+        # output1 = BGEMODEL(**input1)
+        # embeddings1 = output1.last_hidden_state
+        # output2 = NMCMODEL(**input2)
+        # embeddings2 = output2.last_hidden_state
+        output3 = QWEN3MODEL(**input3)
         embeddings3 = output3.last_hidden_state
     
-    textEmbeddings = torch.cat([embeddings1, embeddings2, embeddings3], dim=-1)
+    textEmbeddings = embeddings3#torch.cat([embeddings1, embeddings2, embeddings3], dim=-1)
     return textEmbeddings
 
 # modelPath = "./models/"
@@ -98,15 +121,15 @@ def concatenateTextEmbeddings(text, maxLength = 512, modelPath = "./models/"):
 
 def EncodeImageDCAE(image):
     # with torch.no_grad():
-    dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
-    latents = dcaeEncoder.encode(image).latent
+    # dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
+    latents = DCAEENCODER.encode(image).latent
     return latents
 
 
 def DecodeImageDCAE(image, deNormalize = False):
     # with torch.no_grad():
-    dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
-    decoded = dcaeEncoder.decode(image).sample
+    # dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
+    decoded = DCAEENCODER.decode(image).sample
     if deNormalize:
         decoded = decoded * 0.5 + 0.5
 
@@ -115,11 +138,11 @@ def DecodeImageDCAE(image, deNormalize = False):
 class PretrainedEncodeImage(nn.Module):
     def __init__(self, pretrainedModel = "mit-han-lab/dc-ae-f64c128-in-1.0-diffusers"):
         super().__init__()
-        self.dcaeEncoder = AutoencoderDC.from_pretrained(pretrained_model_name_or_path=pretrainedModel, torch_dtype = torch.float32).to(device)
+        # self.dcaeEncoder = AutoencoderDC.from_pretrained(pretrained_model_name_or_path=pretrainedModel, torch_dtype = torch.float32).to(device)
         
     def decodeImage(self, x, deNormalize = False):
         with torch.no_grad():
-            decodedLatents = self.dcaeEncoder.decode(x).sample
+            decodedLatents = DCAEENCODER.decode(x).sample
         
         if deNormalize:
             decodedLatents = decodedLatents * 0.5 + 0.5
@@ -128,7 +151,7 @@ class PretrainedEncodeImage(nn.Module):
 
     def forward(self, x):
         with torch.no_grad():
-            encodedLatents = self.dcaeEncoder.encode(x).latent
+            encodedLatents = DCAEENCODER.encode(x).latent
 
         return encodedLatents
 
@@ -144,6 +167,7 @@ class ImageTextDataset(Dataset):
         self.data = data
         self.transform = transform
         self.rootDir = rootDir
+        self.latentCache = {}
         
     def __len__(self):
         return len(self.data)
@@ -161,9 +185,19 @@ class ImageTextDataset(Dataset):
         ]
 
         caption = random.choice(captions)
+        if index in self.latentCache:
+            image = self.latentCache[index]
+        else:
+            image = Image.open(image_path).convert("RGB")
+            image = self.transform(image)
+            
+            # Cache if not too many images cached (prevent OOM)
+            if len(self.latentCache) < 1000:
+                self.latentCache[index] = image
 
-        image = Image.open(image_path).convert("RGB")
-        image = self.transform(image)
+
+        # image = Image.open(image_path).convert("RGB")
+        # image = self.transform(image)
         
         # if(len(image) == 3):
         #     image = image.unsqueeze(0)
@@ -177,6 +211,11 @@ transform = transforms.Compose([
     transforms.Resize((512, 512)),
     transforms.ToTensor(),                 
     transforms.Normalize([0.5]*3, [0.5]*3)])
+
+# transform = transforms.Compose([
+#     transforms.Resize((512, 512)),
+#     transforms.ToTensor(),                 
+#     transforms.Normalize([0.5]*3, [0.5]*3)])
 
 data = pd.read_csv("dataset/COCO2017.csv")
 
@@ -447,7 +486,7 @@ IMAGEHEIGHT = 512
 IMAGEWIDTH = 512
 EMBEDDINGDIM = 768
 ENCODEDIMAGHEIGHT = 4
-TEXTINPUTDIMENSION = 5632
+TEXTINPUTDIMENSION = 4096#5632
 ENCODEDIMAGWIDTH = 4
 BATCHSIZE = 2
 INCHANNELS = 3
@@ -463,41 +502,59 @@ NSUPERVISION = 16
 
 
 data = pd.read_csv("dataset/COCO2017.csv")
-transform = transforms.Compose(
-    [
-    transforms.Resize((IMAGEHEIGHT, IMAGEWIDTH)),
-    transforms.ToTensor(),                 
-    transforms.Normalize([0.5]*3, [0.5]*3)
-    ]
-)
+# transform = transforms.Compose(
+#     [
+#     transforms.Resize((IMAGEHEIGHT, IMAGEWIDTH)),
+#     transforms.ToTensor(),                 `
+#     transforms.Normalize([0.5]*3, [0.5]*3)
+#     ]
+# )
 
 trmModel = TinyRecursiveBlock(embedDimension=EMBEDDINGDIM, numHeads=HEADS, encodedImageHeight=ENCODEDIMAGHEIGHT, encodedImageWidth=ENCODEDIMAGWIDTH, patches=PATCHES, patchSize=PATCHSIZE, encodedChannels=LATENTCHANNEL, textInputDimension=TEXTINPUTDIMENSION, latentsize=LATENTSIZE)
 
 
 tensorData = ImageTextDataset(data, transform = transform)
-dataloader = DataLoader(tensorData, batch_size=BATCHSIZE, shuffle = True, num_workers=0)
+dataloader = DataLoader(tensorData, batch_size=BATCHSIZE, shuffle = True, num_workers=8)
+
+# def perceptualLoss(pred, target):
+#     batch, channels, height, width = pred.shape
+
+#     pred = pred.view(batch, channels, height, width)
+#     target = target.view(batch, channels, height, width)
+
+#     if pred.shape[1] == 1:
+#         pred = pred.repeat(1, 3, 1, 1)
+#         target = target.repeat(1, 3, 1, 1)
+
+#     vgg_pred = VGG_MODEL(pred).to(device)
+#     vgg_true = VGG_MODEL(target).to(device)
+
+#     perceptualoss = Fn.mse_loss(vgg_pred, vgg_true)
+#     return perceptualoss
 
 def perceptualLoss(pred, target):
-    vgg = vgg16(pretrained = True).features[:17].eval()
-    vgg.to(device)
-    for param in vgg.parameters():
-        param.requires_grad = False
+    with torch.no_grad():
+        batch, channels, height, width = pred.shape
 
-    batch, channels, height, width = pred.shape
+        pred = pred.view(batch, channels, height, width)
+        target = target.view(batch, channels, height, width)
 
-    pred = pred.view(batch, channels, height, width)
-    target = target.view(batch, channels, height, width)
+        # VGG expects 3-channel images
+        if pred.shape[1] == 1:
+            pred = pred.repeat(1, 3, 1, 1)
+            target = target.repeat(1, 3, 1, 1)
 
-    if pred.shape[1] == 1:
-        pred = pred.repeat(1, 3, 1, 1)
-        target = target.repeat(1, 3, 1, 1)
+        # Clamp to valid range to avoid NaNs
+        pred = torch.clamp(pred, -1.0, 1.0)
+        target = torch.clamp(target, -1.0, 1.0)
 
+        vgg_pred = VGG_MODEL(pred)
+        vgg_true = VGG_MODEL(target)
 
-    vgg_pred = vgg(pred).to(device)
-    vgg_true = vgg(target).to(device)
+        perceptualoss = Fn.mse_loss(vgg_pred, vgg_true)
 
-    perceptualoss = Fn.mse_loss(vgg_pred, vgg_true)
     return perceptualoss
+
 
 # pr = torch.randn(1, 3, 512, 512)
 # tr = torch.randn(1, 3, 512, 512)
@@ -511,9 +568,9 @@ scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 start_epoch = 0
 # baseDir = os.getcwd()
 baseDir = os.path.dirname(__file__)
-print(baseDir)
 checkpoint_path = os.path.join(baseDir, "models", "trmModel.pt")
 
+print(checkpoint_path)
 if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     trmModel.load_state_dict(checkpoint['model_state_dict'])
@@ -531,7 +588,7 @@ else:
 
 trmModel = torch.nn.DataParallel(trmModel)
 trmModel.to(device)
-# print(f"Total Parameters: {sum(p.numel() for p in trmModel.parameters() if p.requires_grad)}")
+print(f"Total Parameters: {sum(p.numel() for p in trmModel.parameters() if p.requires_grad)}")
 
 for each_epoch in range(start_epoch, EPOCHS):
     trmModel.train()
@@ -554,25 +611,32 @@ for each_epoch in range(start_epoch, EPOCHS):
         xt = t[:, None, None, None] * x1 + (1 - t[:, None, None, None]) * x0
 
         x, y, z, sharedParameters = trmModel.module.forward_init(xt, textEmbed, t)
+        x = x.to(device)
+        y = y.to(device)
+        z = z.to(device)
         
         
         batchLoss = 0.0
         for i in range(0, NSUPERVISION):
             # print(i)
             
-            optimizer.zero_grad()
+            
             y, z, yOutput = deepReasoning(trmModel.module, x, y, z, sharedParameters, n = 6, T = 3)
             
             loss = lossFn(yOutput, target)
             perceptLoss = perceptualLoss(yOutput, target)
             totalLoss = loss + 0.25 * perceptLoss
+            if torch.isnan(totalLoss) or torch.isinf(totalLoss):
+                print(f"Warning: NaN/Inf detected at epoch {each_epoch}, supervision {i}")
+                print(f"Loss: {loss.item()}, Perceptual Loss: {perceptLoss.item()}")
+                break
             
             batchLoss += totalLoss.item()
             
             totalLoss.backward(retain_graph=True)
             torch.nn.utils.clip_grad_norm_(trmModel.parameters(), max_norm=1.0)
             optimizer.step()
-            torch.nn.utils.clip_grad_norm_(trmModel.parameters(), max_norm=1.0)
+            optimizer.zero_grad()
             if perceptLoss.item() < 0.00001:
                 break
 
@@ -599,8 +663,8 @@ for each_epoch in range(start_epoch, EPOCHS):
     }, checkpoint_path)
     
     
-    # wandb.log({
-    #     "Learning Rate": optimizer.param_groups[0]['lr'],
-    #     "TRM Loss": f"{trmloss}"
-    # })
+    wandb.log({
+        "Learning Rate": optimizer.param_groups[0]['lr'],
+        "TRM Loss": f"{trmloss}"
+    })
     scheduler.step()
