@@ -1,8 +1,8 @@
 # TRM: Tiny Recursive Multimodal Text-to-Image Generation
 
-This repository implements **TRM (Tiny Recursive Model)** — a research oriented **text-to-image generation framework** that combines **multi-model text embeddings**, **DCAE image latents**, and a **recursive transformer-style reasoning loop** for image synthesis.
+This repository implements **TRM (Tiny Recursive Model)**, a research oriented **text-to-image generation framework** that combines **multi-model text embeddings**, **DCAE image latents**, and a **recursive transformer-style reasoning loop** for image synthesis.
 
-The model is trained on **COCO-style image–caption datasets** and learns to denoise images conditioned on rich text embeddings through **iterative latent reasoning**.
+My implementation is based on approaches inspired by the Diffusion Transformer paper, DiT-Air (Apple), the Hierarchical Reasoning Model, and the Tiny Recursive Model.
 
 ---
 
@@ -162,5 +162,4 @@ Training resumes automatically if a checkpoint exists.
 
 ---
 
-## Notes
 I couldn't train it, as I did not have access to H100 GPU's, you can try training it, and hope for best results.
