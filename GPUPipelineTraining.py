@@ -33,32 +33,32 @@ VGG_MODEL = vgg16(pretrained=True).features[:17].eval().to(device)
 
 modelPath = "./models/"
 os.makedirs(modelPath, exist_ok=True)
-# BGEDIR = os.path.join(modelPath, "bge-base-en-v1.5")
-# NMCDIR = os.path.join(modelPath, "nomic-embed-text-v1")
+BGEDIR = os.path.join(modelPath, "bge-base-en-v1.5")
+NMCDIR = os.path.join(modelPath, "nomic-embed-text-v1")
 QWENDIR = os.path.join(modelPath, "qwen3-embedding-8b")
-# AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
-# AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
-# AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(NMCDIR)
-# AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(NMCDIR)
+AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
+AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(BGEDIR)
+AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(NMCDIR)
+AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(NMCDIR)
 AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(QWENDIR)
 AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(QWENDIR)
 
-# BGETOKENIZER = AutoTokenizer.from_pretrained(BGEDIR, local_files_only=True)
-# BGEMODEL = AutoModel.from_pretrained(BGEDIR, local_files_only=True)
-# NMCTOKENIZER = AutoTokenizer.from_pretrained(NMCDIR, local_files_only=True)
-# NMCMODEL = AutoModel.from_pretrained(NMCDIR, trust_remote_code=True, local_files_only=True)
+BGETOKENIZER = AutoTokenizer.from_pretrained(BGEDIR, local_files_only=True)
+BGEMODEL = AutoModel.from_pretrained(BGEDIR, local_files_only=True)
+NMCTOKENIZER = AutoTokenizer.from_pretrained(NMCDIR, local_files_only=True)
+NMCMODEL = AutoModel.from_pretrained(NMCDIR, trust_remote_code=True, local_files_only=True)
 QWEN3TOKENIZER = AutoTokenizer.from_pretrained(QWENDIR, local_files_only=True)
 QWEN3MODEL = AutoModel.from_pretrained(QWENDIR, local_files_only=True)
 
 
-# wandb.login()
+wandb.login()
 
-# wandb.init(
-#     project="trm-text-to-Image",  
-#     name="experiment-1",    
-#     resume="allow",
-#     id="tmoz8jmm"
-# )
+wandb.init(
+    project="trm-text-to-Image",  
+    name="experiment-1",    
+    resume="allow",
+    id="tmoz8jmm"
+)
 
 baseDir = os.path.dirname(__file__)
 # modelPath = os.path.join(baseDir, "models")
@@ -71,47 +71,47 @@ def concatenateTextEmbeddings(text, maxLength = 512, modelPath = "./models"):
     else:
         raise ValueError(f"Give string or list of strings, recieved this {type(text)}")
     
-    # os.makedirs(modelPath, exist_ok=True)
-    # bgedir = os.path.join(modelPath, "bge-base-en-v1.5")
-    # nmcdir = os.path.join(modelPath, "nomic-embed-text-v1")
-    # qwendir = os.path.join(modelPath, "qwen3-embedding-8b")
+    os.makedirs(modelPath, exist_ok=True)
+    bgedir = os.path.join(modelPath, "bge-base-en-v1.5")
+    nmcdir = os.path.join(modelPath, "nomic-embed-text-v1")
+    qwendir = os.path.join(modelPath, "qwen3-embedding-8b")
     
 
-    # if not (os.path.exists(bgedir) and os.listdir(bgedir)):
-    #     print("Downloading BGE-base-en-v1.5...")
-    #     AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
-    #     AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
+    if not (os.path.exists(bgedir) and os.listdir(bgedir)):
+        print("Downloading BGE-base-en-v1.5...")
+        AutoTokenizer.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
+        AutoModel.from_pretrained("BAAI/bge-base-en-v1.5").save_pretrained(bgedir)
 
-    # if not (os.path.exists(nmcdir) and os.listdir(nmcdir)):
-    #     print("Downloading Nomic-embed-text-v1...")
-    #     AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(nmcdir)
-    #     AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(nmcdir)
+    if not (os.path.exists(nmcdir) and os.listdir(nmcdir)):
+        print("Downloading Nomic-embed-text-v1...")
+        AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1").save_pretrained(nmcdir)
+        AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1", trust_remote_code=True).save_pretrained(nmcdir)
 
-    # if not (os.path.exists(qwendir) and os.listdir(qwendir)):
-    #     print("Downloading Qwen3-Embedding-8B...")
-    #     AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
-    #     AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
+    if not (os.path.exists(qwendir) and os.listdir(qwendir)):
+        print("Downloading Qwen3-Embedding-8B...")
+        AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
+        AutoModel.from_pretrained("Qwen/Qwen3-Embedding-8B").save_pretrained(qwendir)
 
-    # bgeTokenizer = AutoTokenizer.from_pretrained(bgedir)#, local_files_only=True)
-    # bgeModel = AutoModel.from_pretrained(bgedir)#, local_files_only=True)
-    # nmcTokenizer = AutoTokenizer.from_pretrained(nmcdir)#, local_files_only=True)
-    # nmcModel = AutoModel.from_pretrained(nmcdir, trust_remote_code=True)#, local_files_only=True)
-    # qwen3Tokenizer = AutoTokenizer.from_pretrained(qwendir)#, local_files_only=True)
-    # qwen3Model = AutoModel.from_pretrained(qwendir)#, local_files_only=True)
+    bgeTokenizer = AutoTokenizer.from_pretrained(bgedir)#, local_files_only=True)
+    bgeModel = AutoModel.from_pretrained(bgedir)#, local_files_only=True)
+    nmcTokenizer = AutoTokenizer.from_pretrained(nmcdir)#, local_files_only=True)
+    nmcModel = AutoModel.from_pretrained(nmcdir, trust_remote_code=True)#, local_files_only=True)
+    qwen3Tokenizer = AutoTokenizer.from_pretrained(qwendir)#, local_files_only=True)
+    qwen3Model = AutoModel.from_pretrained(qwendir)#, local_files_only=True)
 
-    # input1 = BGETOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
-    # input2 = NMCTOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
+    input1 = BGETOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
+    input2 = NMCTOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
     input3 = QWEN3TOKENIZER(text, padding='max_length', return_tensors="pt", truncation=True, max_length=maxLength)
 
     with torch.no_grad():
-        # output1 = BGEMODEL(**input1)
-        # embeddings1 = output1.last_hidden_state
-        # output2 = NMCMODEL(**input2)
-        # embeddings2 = output2.last_hidden_state
+        output1 = BGEMODEL(**input1)
+        embeddings1 = output1.last_hidden_state
+        output2 = NMCMODEL(**input2)
+        embeddings2 = output2.last_hidden_state
         output3 = QWEN3MODEL(**input3)
         embeddings3 = output3.last_hidden_state
     
-    textEmbeddings = embeddings3#torch.cat([embeddings1, embeddings2, embeddings3], dim=-1)
+    textEmbeddings = torch.cat([embeddings1, embeddings2, embeddings3], dim=-1)#embeddings3#
     return textEmbeddings
 
 # modelPath = "./models/"
@@ -120,15 +120,11 @@ def concatenateTextEmbeddings(text, maxLength = 512, modelPath = "./models"):
 # conTextEmbed.shape
 
 def EncodeImageDCAE(image):
-    # with torch.no_grad():
-    # dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
     latents = DCAEENCODER.encode(image).latent
     return latents
 
 
 def DecodeImageDCAE(image, deNormalize = False):
-    # with torch.no_grad():
-    # dcaeEncoder = AutoencoderDC.from_pretrained(f"mit-han-lab/dc-ae-f64c128-in-1.0-diffusers", torch_dtype=torch.float32).to(device).eval()
     decoded = DCAEENCODER.decode(image).sample
     if deNormalize:
         decoded = decoded * 0.5 + 0.5
@@ -486,7 +482,7 @@ IMAGEHEIGHT = 512
 IMAGEWIDTH = 512
 EMBEDDINGDIM = 768
 ENCODEDIMAGHEIGHT = 4
-TEXTINPUTDIMENSION = 4096#5632
+TEXTINPUTDIMENSION = 5632 #4096#5632
 ENCODEDIMAGWIDTH = 4
 BATCHSIZE = 2
 INCHANNELS = 3
@@ -516,21 +512,6 @@ trmModel = TinyRecursiveBlock(embedDimension=EMBEDDINGDIM, numHeads=HEADS, encod
 tensorData = ImageTextDataset(data, transform = transform)
 dataloader = DataLoader(tensorData, batch_size=BATCHSIZE, shuffle = True, num_workers=8)
 
-# def perceptualLoss(pred, target):
-#     batch, channels, height, width = pred.shape
-
-#     pred = pred.view(batch, channels, height, width)
-#     target = target.view(batch, channels, height, width)
-
-#     if pred.shape[1] == 1:
-#         pred = pred.repeat(1, 3, 1, 1)
-#         target = target.repeat(1, 3, 1, 1)
-
-#     vgg_pred = VGG_MODEL(pred).to(device)
-#     vgg_true = VGG_MODEL(target).to(device)
-
-#     perceptualoss = Fn.mse_loss(vgg_pred, vgg_true)
-#     return perceptualoss
 
 def perceptualLoss(pred, target):
     with torch.no_grad():
@@ -588,6 +569,7 @@ else:
 
 trmModel = torch.nn.DataParallel(trmModel)
 trmModel.to(device)
+# 27 Million parameters
 print(f"Total Parameters: {sum(p.numel() for p in trmModel.parameters() if p.requires_grad)}")
 
 for each_epoch in range(start_epoch, EPOCHS):
