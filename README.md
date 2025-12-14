@@ -103,7 +103,7 @@ Output shape:
 
 Total loss:
 ```
-Total Loss = MSE Loss + 0.25 × Perceptual Loss
+Total Loss = MSE Loss + 0.25 × Perceptual Loss(Trained VGG)
 ```
 
 - **MSE Loss** enforces pixel-level accuracy
@@ -124,41 +124,6 @@ Total Loss = MSE Loss + 0.25 × Perceptual Loss
 | Attention Heads | 16 |
 | Embedding Dim | 768 |
 | Model Size | 27 M |
-
----
-
-## Dataset Format
-
-Dataset CSV must contain:
-```csv
-imagePath,caption1,caption2,caption3,caption4,caption5
-```
-
-Images are loaded relative to the dataset root directory.
-
----
-
-## Checkpointing
-
-Checkpoints are saved to:
-```
-models/trmModel.pt
-```
-
-Each checkpoint includes:
-- Model state
-- Optimizer state
-- Scheduler state
-- Epoch index
-
-Training resumes automatically if a checkpoint exists.
-
----
-
-## Experiment Tracking
-
-- Integrated with **Weights & Biases**
-- Logs training loss and learning rate
 
 ---
 
