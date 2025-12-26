@@ -143,5 +143,7 @@ with some reductions
 New Image Generated after 75 Epochs of Training and 100 Denoising Steps.
 
 Text: "A large passenger airplane flying through the air"
+
+
 ![Generated Image](/Images/newImage.png)
 
