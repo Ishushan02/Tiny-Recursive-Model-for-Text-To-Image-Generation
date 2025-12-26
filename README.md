@@ -127,4 +127,16 @@ Total Loss = MSE Loss + 0.25 × Perceptual Loss(Trained VGG)
 
 ---
 
-I couldn't train it, as I did not have access to H100 GPU's, you can try training it, and hope for best results.
+For my Training as I didn't have much GPU access, I trained with some reductions 
+For text Embedding - I used only QWEN
+Nsupervision Steps - 8
+Training Data - Just 1000 Image/Text Pairs
+
+---
+
+![Loss Plot](/Images/loss.png)
+
+---
+New Image Generated after 75 Epochs of Training and 100 Denoising Steps.
+![Generated Image](/Images/newImage.png)
+
