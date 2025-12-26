@@ -127,10 +127,13 @@ Total Loss = MSE Loss + 0.25 × Perceptual Loss(Trained VGG)
 
 ---
 
-For my Training as I didn't have much GPU access, I trained with some reductions 
-For text Embedding - I used only QWEN
-Nsupervision Steps - 8
-Training Data - Just 1000 Image/Text Pairs
+For my Training as I didn't have much GPU access, I trained 
+with some reductions 
+| Modified Values |
+|-----------------|
+| For text Embedding - I used only QWEN |
+| Nsupervision Steps - 8 |
+| Training Data - Just 1000 Image/Text Pairs |
 
 ---
 
@@ -138,5 +141,7 @@ Training Data - Just 1000 Image/Text Pairs
 
 ---
 New Image Generated after 75 Epochs of Training and 100 Denoising Steps.
+
+Text: "A large passenger airplane flying through the air"
 ![Generated Image](/Images/newImage.png)
 
