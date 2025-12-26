@@ -57,7 +57,7 @@ wandb.init(
     project="trm-text-to-Image",  
     name="experiment-1",    
     resume="allow",
-    id="jyx1mems"
+    id="8pgkocwg"
 )
 
 baseDir = os.path.dirname(__file__)
@@ -650,7 +650,6 @@ for each_epoch in range(start_epoch, EPOCHS):
         loop.set_postfix({
             "TRM Loss": f"{trmloss}"
         })
-        # break
 
     trmloss /= len(dataloader)   
 
@@ -665,7 +664,6 @@ for each_epoch in range(start_epoch, EPOCHS):
     
     
     wandb.log({
-        "Learning Rate": optimizer.param_groups[0]['lr'],
-        "TRM Loss": f"{trmloss}"
+        "TRM Loss": trmloss
     })
     scheduler.step()
