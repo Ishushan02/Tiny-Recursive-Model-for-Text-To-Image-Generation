@@ -140,9 +140,9 @@ with some reductions
 ![Loss Plot](/Images/loss.png)
 
 ---
-New Image Generated after 75 Epochs of Training and 100 Denoising Steps.
+New Image Generated after 120 Epochs of Training and 100 Denoising Steps.
 
-Text: "A large passenger airplane flying through the air"
+Text: "A Beautiful Ocean"
 
 
 ![Generated Image](/Images/newImage.png)
