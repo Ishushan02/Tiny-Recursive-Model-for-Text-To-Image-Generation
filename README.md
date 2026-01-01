@@ -105,6 +105,7 @@ Total loss:
 ```
 Total Loss = MSE Loss + 0.25 × Perceptual Loss(Trained VGG)
 ```
+(I think I gave more weight to Perceptual Loss, I should have given weightage in between from 1% to 10% and not 25%)
 
 - **MSE Loss** enforces pixel-level accuracy
 - **Perceptual Loss** compares VGG16 feature activations
