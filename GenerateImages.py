@@ -439,44 +439,45 @@ for state in optimizer.state.values():
 trmModel = torch.nn.DataParallel(trmModel)
 trmModel.to(device)
 
-
-def generateNewImage(trmModel, text, B = 1, NSTEPS = 50):
+def generateNewImage(text, B=1, NSTEPS=50):
     textEmbed = concatenateTextEmbeddings(text)
+    if textEmbed.dim() == 2:
+        textEmbed = textEmbed.unsqueeze(0)
+    if textEmbed.shape[0] == 1 and B > 1:
+        textEmbed = textEmbed.expand(B, -1, -1)
+    
     trmModel.eval()
     with torch.no_grad():
-        xt = torch.randn(B, 3, 512, 512).to(device)
-        textEmbed = textEmbed.to(device)        
+        xt = torch.randn(B, LATENTCHANNEL, LATENTSIZE, LATENTSIZE).to(device)
+        textEmbed = textEmbed.to(device)
+        
         dt = 1.0 / NSTEPS
-
+        
         for i in range(NSTEPS):
-            t = torch.full((1,), i / NSTEPS, device=device)
+            t = torch.full((B,), i / NSTEPS, device=device)
+            xt_decoded = DecodeImageDCAE(xt, deNormalize=False)
             x, y, z, sharedParameters = trmModel.module.forward_init(
-                xt, textEmbed, t
+                xt_decoded, textEmbed, t
             )
             y, z, yOutput = deepReasoning(
-                trmModel.module,
-                x, y, z,
-                sharedParameters,
-                n=6,
-                T=3
+                trmModel.module, x, y, z, sharedParameters, n=6, T=3
             )
+            
+            v_latent = EncodeImageDCAE(yOutput)
+            
+            xt = xt + dt * v_latent
+        
+        final_image = DecodeImageDCAE(xt, deNormalize=True)
+    
+    return final_image
 
-            # predicted velocity ≈ (x1 - x0)
-            v = yOutput   
 
-            # Euler step
-            xt = xt + dt * v
-
-    return xt
-
-text = "A large passenger airplane flying through the air."
-
-xt = generateNewImage(trmModel, text, B = 1, NSTEPS= 100)
+# Usage
+xt = generateNewImage("A large passenger airplane flying through the air.", B=1, NSTEPS=40)
 img = xt[0]
 print(img.shape)
-img = img.permute(1, 2, 0) 
+img = img.permute(1, 2, 0).cpu().numpy()
 print(img.shape)
 plt.imshow(img)
 plt.axis("off")
-plt.savefig("Images/newImage.png")
 plt.show()

@@ -141,7 +141,7 @@ with some reductions
 ![Loss Plot](/Images/loss.png)
 
 ---
-New Image Generated after 120 Epochs of Training and 100 Denoising Steps.
+New Image Generated after 120 Epochs of Training and 20 Denoising Steps.
 
 Text: "A Beautiful Ocean"
 
