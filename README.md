@@ -143,8 +143,10 @@ with some reductions
 ---
 New Image Generated after 120 Epochs of Training and 20 Denoising Steps.
 
-Text: "A Beautiful Ocean"
-
+Text: "A Blue shiny Sky"
 
 ![Generated Image](/Images/newImage.png)
+
+If you Zoom the Image and see the result, you can see some bits of cloud in it.. It is really a breakthrough as
+I am able to generate it with just 137 Epochs of training 1000 text-image pair on my new Architecture.
 
