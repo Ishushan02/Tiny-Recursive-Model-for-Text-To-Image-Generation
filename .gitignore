@@ -6,7 +6,6 @@ forwardReasoning
 precomputedLatents
 .DS_Store
 copied_images
-combinationFnBlock.py
-6_ImageGeneration.ipynb
-GenerateImages.py
-GPUPipelineTraining
+./combinationFnBlock.py
+./GenerateImages.py
+./6_ImageGeneration.ipynb
