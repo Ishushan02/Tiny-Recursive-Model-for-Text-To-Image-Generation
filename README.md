@@ -141,12 +141,12 @@ with some reductions
 ![Loss Plot](/Images/loss.png)
 
 ---
-New Image Generated after 120 Epochs of Training and 20 Denoising Steps.
+New Image Generated after 145 Epochs of Training and 20 Denoising Steps.
 
 Text: "A Blue shiny Sky"
 
 ![Generated Image](/Images/newImage.png)
 
 If you Zoom the Image and see the result, you can see some bits of cloud in it.. It is really a breakthrough as
-I am able to generate it with just 137 Epochs of training 1000 text-image pair on my new Architecture.
+I am able to generate it with just 145 Epochs of training 1000 text-image pair on my new Architecture.
 
